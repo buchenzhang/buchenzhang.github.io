@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search> 
-  
-  
-    
-    <entry>
-      <title>建站说明</title>
-      <link href="/2024/09/16/%E5%BB%BA%E7%AB%99%E8%AF%B4%E6%98%8E/"/>
-      <url>/2024/09/16/%E5%BB%BA%E7%AB%99%E8%AF%B4%E6%98%8E/</url>
-      
-        <content type="html"><![CDATA[<h1 id="建站说明"><a href="#建站说明" class="headerlink" title="建站说明"></a>建站说明</h1><p>​        欢迎大家关注，第一次建立博客系统，有诸多不足的地方希望多多包含。</p><h2 id="关于博客"><a href="#关于博客" class="headerlink" title="关于博客"></a>关于博客</h2><p>​        建站记录学习过程和一些技术文档，记录在本站的都是作者个人学习所获，如有问题，还望指出。本站不记录水贴，内容主要是两部分，技术文章和作者的成长感悟。期待我的第一篇文章吧！！！</p><h2 id="技术说明"><a href="#技术说明" class="headerlink" title="技术说明"></a>技术说明</h2><p>​      建站技术采用Hexo+Github 托管，可自行Google。</p><h2 id="特别感谢"><a href="#特别感谢" class="headerlink" title="特别感谢"></a>特别感谢</h2><p>​        感谢学习计算机以来对我帮助的各位大佬，列出一些大佬的网名，排名不论先后，如果看见自己，不要谦虚！！！也感谢其他伙伴的帮助，没列出的请见谅，可留言补充！！！</p><p>​       <strong>狐言，墨白，贺兰，杀阿，smx，wj，黑马，图灵学院，mmz，yql，轩辕，彼人…</strong></p><p>​       <strong>特别感谢狐言老兄！！！</strong></p>]]></content>
-      
-      
-      
-    </entry>
-    
-    
-  
-  
+<search>
+  <entry>
+    <title>建站说明</title>
+    <url>/2024/09/16/%E5%BB%BA%E7%AB%99%E8%AF%B4%E6%98%8E/</url>
+    <content><![CDATA[<h1 id="建站说明"><a href="#建站说明" class="headerlink" title="建站说明"></a>建站说明</h1><p>​        欢迎大家关注，第一次建立博客系统，有诸多不足的地方希望多多包含。</p>
+<h2 id="关于博客"><a href="#关于博客" class="headerlink" title="关于博客"></a>关于博客</h2><p>​        建站记录学习过程和一些技术文档，记录在本站的都是作者个人学习所获，如有问题，还望指出。本站不记录水贴，内容主要是两部分，技术文章和作者的成长感悟。期待我的第一篇文章吧！！！</p>
+<h2 id="技术说明"><a href="#技术说明" class="headerlink" title="技术说明"></a>技术说明</h2><p>​      建站技术采用Hexo+Github 托管，可自行Google。</p>
+<h2 id="特别感谢"><a href="#特别感谢" class="headerlink" title="特别感谢"></a>特别感谢</h2><p>​        感谢学习计算机以来对我帮助的各位大佬，列出一些大佬的网名，排名不论先后，如果看见自己，不要谦虚！！！也感谢其他伙伴的帮助，没列出的请见谅，可留言补充！！！</p>
+<p>​       <strong>狐言，墨白，贺兰，杀阿，smx，wj，黑马，图灵学院，mmz，yql，轩辕，彼人…</strong></p>
+<p>​       <strong>特别感谢狐言老兄！！！</strong></p>
+]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+  </entry>
 </search>
