@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>建站说明</title>
-    <url>/2024/09/16/%E5%BB%BA%E7%AB%99%E8%AF%B4%E6%98%8E/</url>
-    <content><![CDATA[<h1 id="建站说明"><a href="#建站说明" class="headerlink" title="建站说明"></a>建站说明</h1><p>​        欢迎大家关注，第一次建立博客系统，有诸多不足的地方希望多多包含。</p>
-<h2 id="关于博客"><a href="#关于博客" class="headerlink" title="关于博客"></a>关于博客</h2><p>​        建站记录学习过程和一些技术文档，记录在本站的都是作者个人学习所获，如有问题，还望指出。本站不记录水贴，内容主要是两部分，技术文章和作者的成长感悟。期待我的第一篇文章吧！！！</p>
-<h2 id="技术说明"><a href="#技术说明" class="headerlink" title="技术说明"></a>技术说明</h2><p>​      建站技术采用Hexo+Github 托管，可自行Google。</p>
-<h2 id="特别感谢"><a href="#特别感谢" class="headerlink" title="特别感谢"></a>特别感谢</h2><p>​        感谢学习计算机以来对我帮助的各位大佬，列出一些大佬的网名，排名不论先后，如果看见自己，不要谦虚！！！也感谢其他伙伴的帮助，没列出的请见谅，可留言补充！！！</p>
-<p>​       <strong>狐言，墨白，贺兰，杀阿，smx，wj，黑马，图灵学院，mmz，yql，轩辕，彼人…</strong></p>
-<p>​       <strong>特别感谢狐言老兄！！！</strong></p>
-]]></content>
-      <categories>
-        <category>日常</category>
-      </categories>
-  </entry>
-  <entry>
     <title>在合思实习的179天</title>
     <url>/2024/09/17/%E5%9C%A8%E5%90%88%E6%80%9D%E5%AE%9E%E4%B9%A0%E7%9A%84179%E5%A4%A9/</url>
     <content><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>​       作者是2024.3.11入职杭州合思摩尔，9.6离职。因为没有hc离职了。离职一周多了。对这段长达半年的实习做个总结吧。</p>
@@ -48,10 +34,24 @@
       </categories>
   </entry>
   <entry>
+    <title>建站说明</title>
+    <url>/2024/09/16/%E5%BB%BA%E7%AB%99%E8%AF%B4%E6%98%8E/</url>
+    <content><![CDATA[<h1 id="建站说明"><a href="#建站说明" class="headerlink" title="建站说明"></a>建站说明</h1><p>​        欢迎大家关注，第一次建立博客系统，有诸多不足的地方希望多多包含。</p>
+<h2 id="关于博客"><a href="#关于博客" class="headerlink" title="关于博客"></a>关于博客</h2><p>​        建站记录学习过程和一些技术文档，记录在本站的都是作者个人学习所获，如有问题，还望指出。本站不记录水贴，内容主要是两部分，技术文章和作者的成长感悟。期待我的第一篇文章吧！！！</p>
+<h2 id="技术说明"><a href="#技术说明" class="headerlink" title="技术说明"></a>技术说明</h2><p>​      建站技术采用Hexo+Github 托管，可自行Google。</p>
+<h2 id="特别感谢"><a href="#特别感谢" class="headerlink" title="特别感谢"></a>特别感谢</h2><p>​        感谢学习计算机以来对我帮助的各位大佬，列出一些大佬的网名，排名不论先后，如果看见自己，不要谦虚！！！也感谢其他伙伴的帮助，没列出的请见谅，可留言补充！！！</p>
+<p>​       <strong>狐言，墨白，贺兰，杀阿，smx，wj，黑马，图灵学院，mmz，yql，轩辕，彼人…</strong></p>
+<p>​       <strong>特别感谢狐言老兄！！！</strong></p>
+]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+  </entry>
+  <entry>
     <title>秋招第一面</title>
     <url>/2024/09/23/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/</url>
     <content><![CDATA[<h1 id="秋招第一个面试是诗悦给的"><a href="#秋招第一个面试是诗悦给的" class="headerlink" title="秋招第一个面试是诗悦给的"></a>秋招第一个面试是诗悦给的</h1><p>晚上散步的时候看见一封邮件，第一眼以为是感谢信，点进去一看是约面了，激动的我都快跳起来了，从九月初开始准备秋招，二十天了，一直没面试，只有做不完的海测和海笔，好不容易有个小天才到了简历复筛环节，结果还是挂了，真的挺郁郁的。</p>
-<p>累计投递了**150+**，就一家约面了，很大的缓解了焦虑，希望后续能有更多的面试吧。🐀秋招也想拿offer。</p>
+<p>累计投递了150+，就一家约面了，很大的缓解了焦虑，希望后续能有更多的面试吧。🐀秋招也想拿offer。</p>
 <p>每天就是投简历、测评、笔试，真的很焦虑，明明就一件事，还是做不好，每天看见牛客oc这家，哪家又发offer了，今天终于到我约面了，虽然才迈出第一步，我相信会越来越好的。</p>
 <p>附一张秋招统计记录图！</p>
 <p>- <img src="/img/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/%E6%8A%95%E9%80%92%E8%AE%B0%E5%BD%95.png" alt="投递记录"></p>
