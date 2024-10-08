@@ -1,148 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Redis原理之通讯协议RESP</title>
-    <url>/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AERESP/</url>
-    <content><![CDATA[<h1 id="Redis原理篇"><a href="#Redis原理篇" class="headerlink" title="Redis原理篇"></a>Redis原理篇</h1><h2 id="3、Redis通信协议-RESP协议"><a href="#3、Redis通信协议-RESP协议" class="headerlink" title="3、Redis通信协议-RESP协议"></a>3、Redis通信协议-RESP协议</h2><p>Redis是一个CS架构的软件，通信一般分两步（不包括pipeline和PubSub）：</p>
-<p>客户端（client）向服务端（server）发送一条命令</p>
-<p>服务端解析并执行命令，返回响应结果给客户端</p>
-<p>因此客户端发送命令的格式、服务端响应结果的格式必须有一个规范，这个规范就是通信协议。</p>
-<p>而在Redis中采用的是RESP（Redis Serialization Protocol）协议：</p>
-<p>Redis 1.2版本引入了RESP协议</p>
-<p>Redis 2.0版本中成为与Redis服务端通信的标准，称为RESP2</p>
-<p>Redis 6.0版本中，从RESP2升级到了RESP3协议，增加了更多数据类型并且支持6.0的新特性–客户端缓存</p>
-<p>但目前，默认使用的依然是RESP2协议，也是我们要学习的协议版本（以下简称RESP）。</p>
-<p>在RESP中，通过首字节的字符来区分不同数据类型，常用的数据类型包括5种：</p>
-<p>单行字符串：首字节是 ‘+’ ，后面跟上单行字符串，以CRLF（ “\r\n” ）结尾。例如返回”OK”： “+OK\r\n”</p>
-<p>错误（Errors）：首字节是 ‘-’ ，与单行字符串格式一样，只是字符串是异常信息，例如：”-Error message\r\n”</p>
-<p>数值：首字节是 ‘:’ ，后面跟上数字格式的字符串，以CRLF结尾。例如：”:10\r\n”</p>
-<p>多行字符串：首字节是 ‘$’ ，表示二进制安全的字符串，最大支持512MB：</p>
-<p>如果大小为0，则代表空字符串：”$0\r\n\r\n”</p>
-<p>如果大小为-1，则代表不存在：”$-1\r\n”</p>
-<p>数组：首字节是 ‘*’，后面跟上数组元素个数，再跟上元素，元素数据类型不限:</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653982993020.png" alt="1653982993020"></p>
-<h3 id="3-1、Redis通信协议-基于Socket自定义Redis的客户端"><a href="#3-1、Redis通信协议-基于Socket自定义Redis的客户端" class="headerlink" title="3.1、Redis通信协议-基于Socket自定义Redis的客户端"></a>3.1、Redis通信协议-基于Socket自定义Redis的客户端</h3><p>Redis支持TCP通信，因此我们可以使用Socket来模拟客户端，与Redis服务端建立连接：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> Socket s;</span><br><span class="line">    <span class="keyword">static</span> PrintWriter writer;</span><br><span class="line">    <span class="keyword">static</span> BufferedReader reader;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 1.建立连接</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">host</span> <span class="operator">=</span> <span class="string">&quot;192.168.150.101&quot;</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">port</span> <span class="operator">=</span> <span class="number">6379</span>;</span><br><span class="line">            s = <span class="keyword">new</span> <span class="title class_">Socket</span>(host, port);</span><br><span class="line">            <span class="comment">// 2.获取输出流、输入流</span></span><br><span class="line">            writer = <span class="keyword">new</span> <span class="title class_">PrintWriter</span>(<span class="keyword">new</span> <span class="title class_">OutputStreamWriter</span>(s.getOutputStream(), StandardCharsets.UTF_8));</span><br><span class="line">            reader = <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(s.getInputStream(), StandardCharsets.UTF_8));</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.发出请求</span></span><br><span class="line">            <span class="comment">// 3.1.获取授权 auth 123321</span></span><br><span class="line">            sendRequest(<span class="string">&quot;auth&quot;</span>, <span class="string">&quot;123321&quot;</span>);</span><br><span class="line">            <span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.2.set name 虎哥</span></span><br><span class="line">            sendRequest(<span class="string">&quot;set&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;虎哥&quot;</span>);</span><br><span class="line">            <span class="comment">// 4.解析响应</span></span><br><span class="line">            obj = handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.2.set name 虎哥</span></span><br><span class="line">            sendRequest(<span class="string">&quot;get&quot;</span>, <span class="string">&quot;name&quot;</span>);</span><br><span class="line">            <span class="comment">// 4.解析响应</span></span><br><span class="line">            obj = handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.2.set name 虎哥</span></span><br><span class="line">            sendRequest(<span class="string">&quot;mget&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;num&quot;</span>, <span class="string">&quot;msg&quot;</span>);</span><br><span class="line">            <span class="comment">// 4.解析响应</span></span><br><span class="line">            obj = handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 5.释放连接</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (reader != <span class="literal">null</span>) reader.close();</span><br><span class="line">                <span class="keyword">if</span> (writer != <span class="literal">null</span>) writer.close();</span><br><span class="line">                <span class="keyword">if</span> (s != <span class="literal">null</span>) s.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Object <span class="title function_">handleResponse</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 读取首字节</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">prefix</span> <span class="operator">=</span> reader.read();</span><br><span class="line">        <span class="comment">// 判断数据类型标示</span></span><br><span class="line">        <span class="keyword">switch</span> (prefix) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;+&#x27;</span>: <span class="comment">// 单行字符串，直接读一行</span></span><br><span class="line">                <span class="keyword">return</span> reader.readLine();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;-&#x27;</span>: <span class="comment">// 异常，也读一行</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(reader.readLine());</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;:&#x27;</span>: <span class="comment">// 数字</span></span><br><span class="line">                <span class="keyword">return</span> Long.parseLong(reader.readLine());</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;$&#x27;</span>: <span class="comment">// 多行字符串</span></span><br><span class="line">                <span class="comment">// 先读长度</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> Integer.parseInt(reader.readLine());</span><br><span class="line">                <span class="keyword">if</span> (len == -<span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (len == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 再读数据,读len个字节。我们假设没有特殊字符，所以读一行（简化）</span></span><br><span class="line">                <span class="keyword">return</span> reader.readLine();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;*&#x27;</span>:</span><br><span class="line">                <span class="keyword">return</span> readBulkString();</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;错误的数据格式！&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Object <span class="title function_">readBulkString</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 获取数组大小</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> Integer.parseInt(reader.readLine());</span><br><span class="line">        <span class="keyword">if</span> (len &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 定义集合，接收多个元素</span></span><br><span class="line">        List&lt;Object&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(len);</span><br><span class="line">        <span class="comment">// 遍历，依次读取每个元素</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">            list.add(handleResponse());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> list;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// set name 虎哥</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">sendRequest</span><span class="params">(String ... args)</span> &#123;</span><br><span class="line">        writer.println(<span class="string">&quot;*&quot;</span> + args.length);</span><br><span class="line">        <span class="keyword">for</span> (String arg : args) &#123;</span><br><span class="line">            writer.println(<span class="string">&quot;$&quot;</span> + arg.getBytes(StandardCharsets.UTF_8).length);</span><br><span class="line">            writer.println(arg);</span><br><span class="line">        &#125;</span><br><span class="line">        writer.flush();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="3-2、Redis内存回收-过期key处理"><a href="#3-2、Redis内存回收-过期key处理" class="headerlink" title="3.2、Redis内存回收-过期key处理"></a>3.2、Redis内存回收-过期key处理</h3><p>Redis之所以性能强，最主要的原因就是基于内存存储。然而单节点的Redis其内存大小不宜过大，会影响持久化或主从同步性能。<br>我们可以通过修改配置文件来设置Redis的最大内存：</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983341150.png" alt="1653983341150"></p>
-<p>当内存使用达到上限时，就无法存储更多数据了。为了解决这个问题，Redis提供了一些策略实现内存回收：</p>
-<p>内存过期策略</p>
-<p>在学习Redis缓存的时候我们说过，可以通过expire命令给Redis的key设置TTL（存活时间）：</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983366243.png" alt="1653983366243"></p>
-<p>可以发现，当key的TTL到期以后，再次访问name返回的是nil，说明这个key已经不存在了，对应的内存也得到释放。从而起到内存回收的目的。</p>
-<p>Redis本身是一个典型的key-value内存存储数据库，因此所有的key、value都保存在之前学习过的Dict结构中。不过在其database结构体中，有两个Dict：一个用来记录key-value；另一个用来记录key-TTL。</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983423128.png" alt="1653983423128"></p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983606531.png" alt="1653983606531"></p>
-<p>这里有两个问题需要我们思考：<br>Redis是如何知道一个key是否过期呢？</p>
-<p>利用两个Dict分别记录key-value对及key-ttl对</p>
-<p>是不是TTL到期就立即删除了呢？</p>
-<p><strong>惰性删除</strong></p>
-<p>惰性删除：顾明思议并不是在TTL到期后就立刻删除，而是在访问一个key的时候，检查该key的存活时间，如果已经过期才执行删除。</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983652865.png" alt="1653983652865"></p>
-<p><strong>周期删除</strong></p>
-<p>周期删除：顾明思议是通过一个定时任务，周期性的抽样部分过期的key，然后执行删除。执行周期有两种：<br>Redis服务初始化函数initServer()中设置定时任务，按照server.hz的频率来执行过期key清理，模式为SLOW<br>Redis的每个事件循环前会调用beforeSleep()函数，执行过期key清理，模式为FAST</p>
-<p>周期删除：顾明思议是通过一个定时任务，周期性的抽样部分过期的key，然后执行删除。执行周期有两种：<br>Redis服务初始化函数initServer()中设置定时任务，按照server.hz的频率来执行过期key清理，模式为SLOW<br>Redis的每个事件循环前会调用beforeSleep()函数，执行过期key清理，模式为FAST</p>
-<p>SLOW模式规则：</p>
-<ul>
-<li>执行频率受server.hz影响，默认为10，即每秒执行10次，每个执行周期100ms。</li>
-<li>执行清理耗时不超过一次执行周期的25%.默认slow模式耗时不超过25ms</li>
-<li>逐个遍历db，逐个遍历db中的bucket，抽取20个key判断是否过期</li>
-<li>如果没达到时间上限（25ms）并且过期key比例大于10%，再进行一次抽样，否则结束</li>
-<li>FAST模式规则（过期key比例小于10%不执行 ）：</li>
-<li>执行频率受beforeSleep()调用频率影响，但两次FAST模式间隔不低于2ms</li>
-<li>执行清理耗时不超过1ms</li>
-<li>逐个遍历db，逐个遍历db中的bucket，抽取20个key判断是否过期<br>如果没达到时间上限（1ms）并且过期key比例大于10%，再进行一次抽样，否则结束</li>
-</ul>
-<p>小总结：</p>
-<p>RedisKey的TTL记录方式：</p>
-<p>在RedisDB中通过一个Dict记录每个Key的TTL时间</p>
-<p>过期key的删除策略：</p>
-<p>惰性清理：每次查找key时判断是否过期，如果过期则删除</p>
-<p>定期清理：定期抽样部分key，判断是否过期，如果过期则删除。<br>定期清理的两种模式：</p>
-<p>SLOW模式执行频率默认为10，每次不超过25ms</p>
-<p>FAST模式执行频率不固定，但两次间隔不低于2ms，每次耗时不超过1ms</p>
-<h3 id="3-3-Redis内存回收-内存淘汰策略"><a href="#3-3-Redis内存回收-内存淘汰策略" class="headerlink" title="3.3 Redis内存回收-内存淘汰策略"></a>3.3 Redis内存回收-内存淘汰策略</h3><p>内存淘汰：就是当Redis内存使用达到设置的上限时，主动挑选部分key删除以释放更多内存的流程。Redis会在处理客户端命令的方法processCommand()中尝试做内存淘汰：</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983978671.png" alt="1653983978671"></p>
-<p> 淘汰策略</p>
-<p>Redis支持8种不同策略来选择要删除的key：</p>
-<ul>
-<li>noeviction： 不淘汰任何key，但是内存满时不允许写入新数据，默认就是这种策略。</li>
-<li>volatile-ttl： 对设置了TTL的key，比较key的剩余TTL值，TTL越小越先被淘汰</li>
-<li>allkeys-random：对全体key ，随机进行淘汰。也就是直接从db-&gt;dict中随机挑选</li>
-<li>volatile-random：对设置了TTL的key ，随机进行淘汰。也就是从db-&gt;expires中随机挑选。</li>
-<li>allkeys-lru： 对全体key，基于LRU算法进行淘汰</li>
-<li>volatile-lru： 对设置了TTL的key，基于LRU算法进行淘汰</li>
-<li>allkeys-lfu： 对全体key，基于LFU算法进行淘汰</li>
-<li>volatile-lfu： 对设置了TTL的key，基于LFI算法进行淘汰<br>比较容易混淆的有两个：<ul>
-<li>LRU（Least Recently Used），最少最近使用。用当前时间减去最后一次访问时间，这个值越大则淘汰优先级越高。</li>
-<li>LFU（Least Frequently Used），最少频率使用。会统计每个key的访问频率，值越小淘汰优先级越高。</li>
-</ul>
-</li>
-</ul>
-<p>Redis的数据都会被封装为RedisObject结构：</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653984029506.png" alt="1653984029506"></p>
-<p>LFU的访问次数之所以叫做逻辑访问次数，是因为并不是每次key被访问都计数，而是通过运算：</p>
-<ul>
-<li>生成0~1之间的随机数R</li>
-<li>计算 (旧次数 * lfu_log_factor + 1)，记录为P</li>
-<li>如果 R &lt; P ，则计数器 + 1，且最大不超过255</li>
-<li>访问次数会随时间衰减，距离上一次访问时间每隔 lfu_decay_time 分钟，计数器 -1</li>
-</ul>
-<p>最后用一副图来描述当前的这个流程吧</p>
-<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653984085095.png" alt="1653984085095"></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>在合思实习的179天</title>
-    <url>/2024/09/17/%E5%9C%A8%E5%90%88%E6%80%9D%E5%AE%9E%E4%B9%A0%E7%9A%84179%E5%A4%A9/</url>
-    <content><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>​       作者是2024.3.11入职杭州合思摩尔，9.6离职。因为没有hc离职了。离职一周多了。对这段长达半年的实习做个总结吧。</p>
-<h3 id="实习经历"><a href="#实习经历" class="headerlink" title="实习经历"></a>实习经历</h3><p>​		我在A组参与基于流程编排的工作流引擎的开发维护以及性能优化，说是工作流，其实是一种代码可视化的工具，基于spring框架的。出于保密不讲业务细节和一些原理了。在这个组内学到了很多，尤其是srcum迭代规范，另外性能优化也跟着组内一个大佬做的，这个大佬很年轻，跟着学到了很多。他说“代码难写要么是需求的问题，要么是自己理解错了”这句话我还一直记得。</p>
-<p>​        待了三个月后调到B组了，我们三个实习生被调过去了，其实我们都是十分抗拒的，去B组支援线上工单，该组业务久远，逻辑复杂，每个迭代的工单都上百，是公司工单最多的组，归因还是历史遗留和逻辑复杂。这种情况根本不是实习生应对的了的。B组ld其实还好，会让我们从工单学习业务，但是A组ld或多或少会关注处理工单数量，那段时间真的是煎熬，每天焦虑处理了几个工单，有没有修复bug，持续了大概一个月，我们三个人，一个实习生第二周就走了，还有一个跟不上被谈话后离职了。我被留在B组了，后面好起来了，组内重新分配，我只负责OpenAPI的工单，但是也有新的问题，该组业务复杂，需求基本是我无法承接的，每次只能接最简单的需求，导致迭代依旧很多时间处理工单，熬了两个多月总算成长起来了。</p>
-<p>​		可惜转正失败，没有HC，AB组ld让我考虑一边实习一边秋招，有面试可以请假，这里还是很感谢的，🐟和🐻掌不可兼得，我选择离职了。</p>
-<h3 id="公司评价"><a href="#公司评价" class="headerlink" title="公司评价"></a>公司评价</h3><p>该部分作者尽量做到客观评价</p>
-<ul>
-<li>区别对待实习生，没有加班餐补，中秋端午实习生没有礼盒（恰巧端午我在另外一个工区，大家都在开心分粽子，我只能假装忙着看代码，实在尴尬）</li>
-<li>对实习生缺少统一的培养和规划，我待两个组没有mt，我知道的另外一个组也没有，都是直接和ld交涉，都是散养式，很多时候有问题也没法问其他老员工（大家都很忙，不能总是打扰），导致成长缓慢。我和ld交流的时候问过为啥没有mt，后续入职的实习生有mt了。</li>
-<li>早10晚7，午休2h，其实只上7h</li>
-<li>全司采用srcu敏捷管理，这块做的很规范</li>
-<li>采用自研框架，学习成本高，但是可以看见一些源码设计</li>
-<li>公司氛围还不错，整体的氛围还是轻松愉快的</li>
-<li>对实习生很宽松，即使你请假一个月也是没有问题的。</li>
-</ul>
-<h3 id="实习生活"><a href="#实习生活" class="headerlink" title="实习生活"></a>实习生活</h3><ul>
-<li>A组ld老是请吃饭，周末会喊大家一起玩，有骑行的，玩桌游的，打乒乓球的，这里也是爱上玩卡坦岛（桌游）了，周末真得卡两把，ld这块真给力。</li>
-<li>有幸参与了一次团建，爽玩了一下</li>
-<li>爱上了杭州，是个不错的城市，另外浙里办是真干事</li>
-<li>认识了很多实习生朋友，很开心。</li>
-</ul>
-<h3 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h3><p>​		6个月对实习生来说已经非常久了，这段经历确实很有意义，感谢我的ld了，离职之后在朋友圈推荐了我一手。<br>贴上我的答辩《写在最后吧》</p>
-<p>- <img src="/img/Screenshot_2024-09-17-15-21-24-702_com.alicloud.d.png" alt="Screenshot_2024-09-17-15-21-24-702_com.alicloud.d"></p>
-<p>再来点我卡坦岛胜利的图吧<br>- <img src="/img/IMG20240824160222.jpg" alt="IMG20240824160222"></p>
-<p>- <img src="/img/IMG20240824150511.jpg" alt="IMG20240824150511"></p>
-<p>- <img src="/img/IMG20240824171703.jpg" alt="IMG20240824171703"></p>
-]]></content>
-      <categories>
-        <category>日常</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>秋招第一面</title>
-    <url>/2024/09/23/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/</url>
-    <content><![CDATA[<h1 id="秋招第一个面试是诗悦给的"><a href="#秋招第一个面试是诗悦给的" class="headerlink" title="秋招第一个面试是诗悦给的"></a>秋招第一个面试是诗悦给的</h1><p>晚上散步的时候看见一封邮件，第一眼以为是感谢信，点进去一看是约面了，激动的我都快跳起来了，从九月初开始准备秋招，二十天了，一直没面试，只有做不完的海测和海笔，好不容易有个小天才到了简历复筛环节，结果还是挂了，真的挺郁郁的。</p>
-<p>累计投递了150+，就一家约面了，很大的缓解了焦虑，希望后续能有更多的面试吧。🐀秋招也想拿offer。</p>
-<p>每天就是投简历、测评、笔试，真的很焦虑，明明就一件事，还是做不好，每天看见牛客oc这家，哪家又发offer了，今天终于到我约面了，虽然才迈出第一步，我相信会越来越好的。</p>
-<p>附一张秋招统计记录图！</p>
-<p>- <img src="/img/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/%E6%8A%95%E9%80%92%E8%AE%B0%E5%BD%95.png" alt="投递记录"></p>
-]]></content>
-      <categories>
-        <category>日常</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Redis原理之数据结构</title>
     <url>/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</url>
     <content><![CDATA[<h2 id="Redis原理之数据结构"><a href="#Redis原理之数据结构" class="headerlink" title="Redis原理之数据结构"></a>Redis原理之数据结构</h2><h3 id="1-1-Redis数据结构-动态字符串"><a href="#1-1-Redis数据结构-动态字符串" class="headerlink" title="1.1 Redis数据结构-动态字符串"></a>1.1 Redis数据结构-动态字符串</h3><p>我们都知道Redis中保存的Key是字符串，value往往是字符串或者字符串的集合。可见字符串是Redis中最常用的一种数据结构。</p>
@@ -625,6 +483,135 @@
       </categories>
   </entry>
   <entry>
+    <title>Redis原理之通讯协议RESP</title>
+    <url>/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AERESP/</url>
+    <content><![CDATA[<h1 id="Redis原理篇"><a href="#Redis原理篇" class="headerlink" title="Redis原理篇"></a>Redis原理篇</h1><h2 id="3、Redis通信协议-RESP协议"><a href="#3、Redis通信协议-RESP协议" class="headerlink" title="3、Redis通信协议-RESP协议"></a>3、Redis通信协议-RESP协议</h2><p>Redis是一个CS架构的软件，通信一般分两步（不包括pipeline和PubSub）：</p>
+<p>客户端（client）向服务端（server）发送一条命令</p>
+<p>服务端解析并执行命令，返回响应结果给客户端</p>
+<p>因此客户端发送命令的格式、服务端响应结果的格式必须有一个规范，这个规范就是通信协议。</p>
+<p>而在Redis中采用的是RESP（Redis Serialization Protocol）协议：</p>
+<p>Redis 1.2版本引入了RESP协议</p>
+<p>Redis 2.0版本中成为与Redis服务端通信的标准，称为RESP2</p>
+<p>Redis 6.0版本中，从RESP2升级到了RESP3协议，增加了更多数据类型并且支持6.0的新特性–客户端缓存</p>
+<p>但目前，默认使用的依然是RESP2协议，也是我们要学习的协议版本（以下简称RESP）。</p>
+<p>在RESP中，通过首字节的字符来区分不同数据类型，常用的数据类型包括5种：</p>
+<p>单行字符串：首字节是 ‘+’ ，后面跟上单行字符串，以CRLF（ “\r\n” ）结尾。例如返回”OK”： “+OK\r\n”</p>
+<p>错误（Errors）：首字节是 ‘-’ ，与单行字符串格式一样，只是字符串是异常信息，例如：”-Error message\r\n”</p>
+<p>数值：首字节是 ‘:’ ，后面跟上数字格式的字符串，以CRLF结尾。例如：”:10\r\n”</p>
+<p>多行字符串：首字节是 ‘$’ ，表示二进制安全的字符串，最大支持512MB：</p>
+<p>如果大小为0，则代表空字符串：”$0\r\n\r\n”</p>
+<p>如果大小为-1，则代表不存在：”$-1\r\n”</p>
+<p>数组：首字节是 ‘*’，后面跟上数组元素个数，再跟上元素，元素数据类型不限:</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653982993020.png" alt="1653982993020"></p>
+<h3 id="3-1、Redis通信协议-基于Socket自定义Redis的客户端"><a href="#3-1、Redis通信协议-基于Socket自定义Redis的客户端" class="headerlink" title="3.1、Redis通信协议-基于Socket自定义Redis的客户端"></a>3.1、Redis通信协议-基于Socket自定义Redis的客户端</h3><p>Redis支持TCP通信，因此我们可以使用Socket来模拟客户端，与Redis服务端建立连接：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> Socket s;</span><br><span class="line">    <span class="keyword">static</span> PrintWriter writer;</span><br><span class="line">    <span class="keyword">static</span> BufferedReader reader;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 1.建立连接</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">host</span> <span class="operator">=</span> <span class="string">&quot;192.168.150.101&quot;</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">port</span> <span class="operator">=</span> <span class="number">6379</span>;</span><br><span class="line">            s = <span class="keyword">new</span> <span class="title class_">Socket</span>(host, port);</span><br><span class="line">            <span class="comment">// 2.获取输出流、输入流</span></span><br><span class="line">            writer = <span class="keyword">new</span> <span class="title class_">PrintWriter</span>(<span class="keyword">new</span> <span class="title class_">OutputStreamWriter</span>(s.getOutputStream(), StandardCharsets.UTF_8));</span><br><span class="line">            reader = <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(s.getInputStream(), StandardCharsets.UTF_8));</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.发出请求</span></span><br><span class="line">            <span class="comment">// 3.1.获取授权 auth 123321</span></span><br><span class="line">            sendRequest(<span class="string">&quot;auth&quot;</span>, <span class="string">&quot;123321&quot;</span>);</span><br><span class="line">            <span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.2.set name 虎哥</span></span><br><span class="line">            sendRequest(<span class="string">&quot;set&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;虎哥&quot;</span>);</span><br><span class="line">            <span class="comment">// 4.解析响应</span></span><br><span class="line">            obj = handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.2.set name 虎哥</span></span><br><span class="line">            sendRequest(<span class="string">&quot;get&quot;</span>, <span class="string">&quot;name&quot;</span>);</span><br><span class="line">            <span class="comment">// 4.解析响应</span></span><br><span class="line">            obj = handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 3.2.set name 虎哥</span></span><br><span class="line">            sendRequest(<span class="string">&quot;mget&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;num&quot;</span>, <span class="string">&quot;msg&quot;</span>);</span><br><span class="line">            <span class="comment">// 4.解析响应</span></span><br><span class="line">            obj = handleResponse();</span><br><span class="line">            System.out.println(<span class="string">&quot;obj = &quot;</span> + obj);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 5.释放连接</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (reader != <span class="literal">null</span>) reader.close();</span><br><span class="line">                <span class="keyword">if</span> (writer != <span class="literal">null</span>) writer.close();</span><br><span class="line">                <span class="keyword">if</span> (s != <span class="literal">null</span>) s.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Object <span class="title function_">handleResponse</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 读取首字节</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">prefix</span> <span class="operator">=</span> reader.read();</span><br><span class="line">        <span class="comment">// 判断数据类型标示</span></span><br><span class="line">        <span class="keyword">switch</span> (prefix) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;+&#x27;</span>: <span class="comment">// 单行字符串，直接读一行</span></span><br><span class="line">                <span class="keyword">return</span> reader.readLine();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;-&#x27;</span>: <span class="comment">// 异常，也读一行</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(reader.readLine());</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;:&#x27;</span>: <span class="comment">// 数字</span></span><br><span class="line">                <span class="keyword">return</span> Long.parseLong(reader.readLine());</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;$&#x27;</span>: <span class="comment">// 多行字符串</span></span><br><span class="line">                <span class="comment">// 先读长度</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> Integer.parseInt(reader.readLine());</span><br><span class="line">                <span class="keyword">if</span> (len == -<span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (len == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 再读数据,读len个字节。我们假设没有特殊字符，所以读一行（简化）</span></span><br><span class="line">                <span class="keyword">return</span> reader.readLine();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&#x27;*&#x27;</span>:</span><br><span class="line">                <span class="keyword">return</span> readBulkString();</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;错误的数据格式！&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Object <span class="title function_">readBulkString</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 获取数组大小</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> Integer.parseInt(reader.readLine());</span><br><span class="line">        <span class="keyword">if</span> (len &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 定义集合，接收多个元素</span></span><br><span class="line">        List&lt;Object&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(len);</span><br><span class="line">        <span class="comment">// 遍历，依次读取每个元素</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">            list.add(handleResponse());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> list;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// set name 虎哥</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">sendRequest</span><span class="params">(String ... args)</span> &#123;</span><br><span class="line">        writer.println(<span class="string">&quot;*&quot;</span> + args.length);</span><br><span class="line">        <span class="keyword">for</span> (String arg : args) &#123;</span><br><span class="line">            writer.println(<span class="string">&quot;$&quot;</span> + arg.getBytes(StandardCharsets.UTF_8).length);</span><br><span class="line">            writer.println(arg);</span><br><span class="line">        &#125;</span><br><span class="line">        writer.flush();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2、Redis内存回收-过期key处理"><a href="#3-2、Redis内存回收-过期key处理" class="headerlink" title="3.2、Redis内存回收-过期key处理"></a>3.2、Redis内存回收-过期key处理</h3><p>Redis之所以性能强，最主要的原因就是基于内存存储。然而单节点的Redis其内存大小不宜过大，会影响持久化或主从同步性能。<br>我们可以通过修改配置文件来设置Redis的最大内存：</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983341150.png" alt="1653983341150"></p>
+<p>当内存使用达到上限时，就无法存储更多数据了。为了解决这个问题，Redis提供了一些策略实现内存回收：</p>
+<p>内存过期策略</p>
+<p>在学习Redis缓存的时候我们说过，可以通过expire命令给Redis的key设置TTL（存活时间）：</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983366243.png" alt="1653983366243"></p>
+<p>可以发现，当key的TTL到期以后，再次访问name返回的是nil，说明这个key已经不存在了，对应的内存也得到释放。从而起到内存回收的目的。</p>
+<p>Redis本身是一个典型的key-value内存存储数据库，因此所有的key、value都保存在之前学习过的Dict结构中。不过在其database结构体中，有两个Dict：一个用来记录key-value；另一个用来记录key-TTL。</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983423128.png" alt="1653983423128"></p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983606531.png" alt="1653983606531"></p>
+<p>这里有两个问题需要我们思考：<br>Redis是如何知道一个key是否过期呢？</p>
+<p>利用两个Dict分别记录key-value对及key-ttl对</p>
+<p>是不是TTL到期就立即删除了呢？</p>
+<p><strong>惰性删除</strong></p>
+<p>惰性删除：顾明思议并不是在TTL到期后就立刻删除，而是在访问一个key的时候，检查该key的存活时间，如果已经过期才执行删除。</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983652865.png" alt="1653983652865"></p>
+<p><strong>周期删除</strong></p>
+<p>周期删除：顾明思议是通过一个定时任务，周期性的抽样部分过期的key，然后执行删除。执行周期有两种：<br>Redis服务初始化函数initServer()中设置定时任务，按照server.hz的频率来执行过期key清理，模式为SLOW<br>Redis的每个事件循环前会调用beforeSleep()函数，执行过期key清理，模式为FAST</p>
+<p>周期删除：顾明思议是通过一个定时任务，周期性的抽样部分过期的key，然后执行删除。执行周期有两种：<br>Redis服务初始化函数initServer()中设置定时任务，按照server.hz的频率来执行过期key清理，模式为SLOW<br>Redis的每个事件循环前会调用beforeSleep()函数，执行过期key清理，模式为FAST</p>
+<p>SLOW模式规则：</p>
+<ul>
+<li>执行频率受server.hz影响，默认为10，即每秒执行10次，每个执行周期100ms。</li>
+<li>执行清理耗时不超过一次执行周期的25%.默认slow模式耗时不超过25ms</li>
+<li>逐个遍历db，逐个遍历db中的bucket，抽取20个key判断是否过期</li>
+<li>如果没达到时间上限（25ms）并且过期key比例大于10%，再进行一次抽样，否则结束</li>
+<li>FAST模式规则（过期key比例小于10%不执行 ）：</li>
+<li>执行频率受beforeSleep()调用频率影响，但两次FAST模式间隔不低于2ms</li>
+<li>执行清理耗时不超过1ms</li>
+<li>逐个遍历db，逐个遍历db中的bucket，抽取20个key判断是否过期<br>如果没达到时间上限（1ms）并且过期key比例大于10%，再进行一次抽样，否则结束</li>
+</ul>
+<p>小总结：</p>
+<p>RedisKey的TTL记录方式：</p>
+<p>在RedisDB中通过一个Dict记录每个Key的TTL时间</p>
+<p>过期key的删除策略：</p>
+<p>惰性清理：每次查找key时判断是否过期，如果过期则删除</p>
+<p>定期清理：定期抽样部分key，判断是否过期，如果过期则删除。<br>定期清理的两种模式：</p>
+<p>SLOW模式执行频率默认为10，每次不超过25ms</p>
+<p>FAST模式执行频率不固定，但两次间隔不低于2ms，每次耗时不超过1ms</p>
+<h3 id="3-3-Redis内存回收-内存淘汰策略"><a href="#3-3-Redis内存回收-内存淘汰策略" class="headerlink" title="3.3 Redis内存回收-内存淘汰策略"></a>3.3 Redis内存回收-内存淘汰策略</h3><p>内存淘汰：就是当Redis内存使用达到设置的上限时，主动挑选部分key删除以释放更多内存的流程。Redis会在处理客户端命令的方法processCommand()中尝试做内存淘汰：</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653983978671.png" alt="1653983978671"></p>
+<p> 淘汰策略</p>
+<p>Redis支持8种不同策略来选择要删除的key：</p>
+<ul>
+<li>noeviction： 不淘汰任何key，但是内存满时不允许写入新数据，默认就是这种策略。</li>
+<li>volatile-ttl： 对设置了TTL的key，比较key的剩余TTL值，TTL越小越先被淘汰</li>
+<li>allkeys-random：对全体key ，随机进行淘汰。也就是直接从db-&gt;dict中随机挑选</li>
+<li>volatile-random：对设置了TTL的key ，随机进行淘汰。也就是从db-&gt;expires中随机挑选。</li>
+<li>allkeys-lru： 对全体key，基于LRU算法进行淘汰</li>
+<li>volatile-lru： 对设置了TTL的key，基于LRU算法进行淘汰</li>
+<li>allkeys-lfu： 对全体key，基于LFU算法进行淘汰</li>
+<li>volatile-lfu： 对设置了TTL的key，基于LFI算法进行淘汰<br>比较容易混淆的有两个：<ul>
+<li>LRU（Least Recently Used），最少最近使用。用当前时间减去最后一次访问时间，这个值越大则淘汰优先级越高。</li>
+<li>LFU（Least Frequently Used），最少频率使用。会统计每个key的访问频率，值越小淘汰优先级越高。</li>
+</ul>
+</li>
+</ul>
+<p>Redis的数据都会被封装为RedisObject结构：</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653984029506.png" alt="1653984029506"></p>
+<p>LFU的访问次数之所以叫做逻辑访问次数，是因为并不是每次key被访问都计数，而是通过运算：</p>
+<ul>
+<li>生成0~1之间的随机数R</li>
+<li>计算 (旧次数 * lfu_log_factor + 1)，记录为P</li>
+<li>如果 R &lt; P ，则计数器 + 1，且最大不超过255</li>
+<li>访问次数会随时间衰减，距离上一次访问时间每隔 lfu_decay_time 分钟，计数器 -1</li>
+</ul>
+<p>最后用一副图来描述当前的这个流程吧</p>
+<p><img src="/img/redis%E5%8E%9F%E7%90%86/1653984085095.png" alt="1653984085095"></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>在合思实习的179天</title>
+    <url>/2024/09/17/%E5%9C%A8%E5%90%88%E6%80%9D%E5%AE%9E%E4%B9%A0%E7%9A%84179%E5%A4%A9/</url>
+    <content><![CDATA[<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>​       作者是2024.3.11入职杭州合思摩尔，9.6离职。因为没有hc离职了。离职一周多了。对这段长达半年的实习做个总结吧。</p>
+<h3 id="实习经历"><a href="#实习经历" class="headerlink" title="实习经历"></a>实习经历</h3><p>​		我在A组参与基于流程编排的工作流引擎的开发维护以及性能优化，说是工作流，其实是一种代码可视化的工具，基于spring框架的。出于保密不讲业务细节和一些原理了。在这个组内学到了很多，尤其是srcum迭代规范，另外性能优化也跟着组内一个大佬做的，这个大佬很年轻，跟着学到了很多。他说“代码难写要么是需求的问题，要么是自己理解错了”这句话我还一直记得。</p>
+<p>​        待了三个月后调到B组了，我们三个实习生被调过去了，其实我们都是十分抗拒的，去B组支援线上工单，该组业务久远，逻辑复杂，每个迭代的工单都上百，是公司工单最多的组，归因还是历史遗留和逻辑复杂。这种情况根本不是实习生应对的了的。B组ld其实还好，会让我们从工单学习业务，但是A组ld或多或少会关注处理工单数量，那段时间真的是煎熬，每天焦虑处理了几个工单，有没有修复bug，持续了大概一个月，我们三个人，一个实习生第二周就走了，还有一个跟不上被谈话后离职了。我被留在B组了，后面好起来了，组内重新分配，我只负责OpenAPI的工单，但是也有新的问题，该组业务复杂，需求基本是我无法承接的，每次只能接最简单的需求，导致迭代依旧很多时间处理工单，熬了两个多月总算成长起来了。</p>
+<p>​		可惜转正失败，没有HC，AB组ld让我考虑一边实习一边秋招，有面试可以请假，这里还是很感谢的，🐟和🐻掌不可兼得，我选择离职了。</p>
+<h3 id="公司评价"><a href="#公司评价" class="headerlink" title="公司评价"></a>公司评价</h3><p>该部分作者尽量做到客观评价</p>
+<ul>
+<li>区别对待实习生，没有加班餐补，中秋端午实习生没有礼盒（恰巧端午我在另外一个工区，大家都在开心分粽子，我只能假装忙着看代码，实在尴尬）</li>
+<li>对实习生缺少统一的培养和规划，我待两个组没有mt，我知道的另外一个组也没有，都是直接和ld交涉，都是散养式，很多时候有问题也没法问其他老员工（大家都很忙，不能总是打扰），导致成长缓慢。我和ld交流的时候问过为啥没有mt，后续入职的实习生有mt了。</li>
+<li>早10晚7，午休2h，其实只上7h</li>
+<li>全司采用srcu敏捷管理，这块做的很规范</li>
+<li>采用自研框架，学习成本高，但是可以看见一些源码设计</li>
+<li>公司氛围还不错，整体的氛围还是轻松愉快的</li>
+<li>对实习生很宽松，即使你请假一个月也是没有问题的。</li>
+</ul>
+<h3 id="实习生活"><a href="#实习生活" class="headerlink" title="实习生活"></a>实习生活</h3><ul>
+<li>A组ld老是请吃饭，周末会喊大家一起玩，有骑行的，玩桌游的，打乒乓球的，这里也是爱上玩卡坦岛（桌游）了，周末真得卡两把，ld这块真给力。</li>
+<li>有幸参与了一次团建，爽玩了一下</li>
+<li>爱上了杭州，是个不错的城市，另外浙里办是真干事</li>
+<li>认识了很多实习生朋友，很开心。</li>
+</ul>
+<h3 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h3><p>​		6个月对实习生来说已经非常久了，这段经历确实很有意义，感谢我的ld了，离职之后在朋友圈推荐了我一手。<br>贴上我的答辩《写在最后吧》</p>
+<p>- <img src="/img/Screenshot_2024-09-17-15-21-24-702_com.alicloud.d.png" alt="Screenshot_2024-09-17-15-21-24-702_com.alicloud.d"></p>
+<p>再来点我卡坦岛胜利的图吧<br>- <img src="/img/IMG20240824160222.jpg" alt="IMG20240824160222"></p>
+<p>- <img src="/img/IMG20240824150511.jpg" alt="IMG20240824150511"></p>
+<p>- <img src="/img/IMG20240824171703.jpg" alt="IMG20240824171703"></p>
+]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Redis原理之网络模型</title>
     <url>/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/</url>
     <content><![CDATA[<h1 id="Redis原理篇"><a href="#Redis原理篇" class="headerlink" title="Redis原理篇"></a>Redis原理篇</h1><h2 id="2、原理篇-Redis网络模型"><a href="#2、原理篇-Redis网络模型" class="headerlink" title="2、原理篇-Redis网络模型"></a>2、原理篇-Redis网络模型</h2><h3 id="2-1-用户空间和内核态空间"><a href="#2-1-用户空间和内核态空间" class="headerlink" title="2.1 用户空间和内核态空间"></a>2.1 用户空间和内核态空间</h3><p>服务器大多都采用Linux系统，这里我们以Linux为例来讲解:</p>
@@ -841,6 +828,70 @@
 ]]></content>
       <categories>
         <category>技术</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>《代码整洁之道》分享</title>
+    <url>/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/</url>
+    <content><![CDATA[<p>最近花时间读了clean code，有些代码例子没看，十几页没高亮挺难受的，这是个遗憾。书里总结了若干的建议，都是鲍勃大叔几十年的最佳实践，并且解释了为啥要这样做。我并不分享这些最佳实践，想了解这块的可以直接看原著17章，算是做了一个总结。</p>
+<p>这里分享一些勾画的句子。</p>
+<p> 2024-09-14<br>代码质量与其整洁度成正比。</p>
+<p> 2024-09-14<br>在Scrum和敏捷（Agile）的日子里，人们关注的是快速将产品推向市场。我们要求工厂全速运转、生产软件。</p>
+<p> 2024-09-14<br>供职于贝尔软件生产研究实验室（Bell Labs Software Production Research）——没错，就是生产！——时，我们有些不太严密的发现，认为前后一致的缩进风格明显标志了较低的缺陷率。</p>
+<p> 2024-09-14<br>在Scrum中，我们使一切可见。我们晾出脏衣服。我们坦承代码状态，因为它永不完美。我们日渐成为完整的人，配得起神的眷顾，也越来越接近细节中的伟大之处。</p>
+<p> 2024-09-14<br>扯淡！我们永远抛不掉代码，因为代码呈现了需求的细节。在某些层面上，这些细节无法被忽略或抽象，必须明确之。将需求明确到机器可以执行的细节程度，就是编程要做的事。而这种规约正是代码。<br> 2024-09-14<br>我们都曾经瞟一眼自己亲手造成的混乱，决定弃之而不顾，走向新一天。我们都曾经看到自己的烂程序居然能运行，然后断言能运行的烂程序总比什么都没有强。我们都曾经说过有朝一日再回头清理。当然，在那些日子里，我们都没听过勒布朗（LeBlanc）法则：稍后等于永不（Later equals never）。</p>
+<p> 2024-09-14<br>Bjarne Stroustrup，C++语言发明者，C++Programming Language（中译版《C++程序设计语言》）一书作者。<br>我喜欢优雅和高效的代码。代码逻辑应当直截了当，叫缺陷难以隐藏；尽量减少依赖关系，使之便于维护；依据某种分层战略完善错误处理代码；性能调至最优，省得引诱别人做没规矩的优化，搞出一堆混乱来。整洁的代码只做好一件事。</p>
+<p> 2024-09-14<br>消除重复和提高表达力让我在整洁代码方面获益良多，只要铭记这两点，改进脏代码时就会大有不同。</p>
+<p> 2024-09-14<br>减少重复代码，提高表达力，提早构建简单抽象。这就是我写整洁代码的方法。</p>
+<p> 2024-09-17<br>取好名字最难的地方在于需要良好的描述技巧和共有文化背景。与其说这是一种技术、商业或管理问题，还不如说是一种教学问题。其结果是，这个领域内的许多人都没能学会做得很好。</p>
+<p> 2024-09-17<br>函数应该做一件事。做好这件事。只做这一件事。</p>
+<p> 2024-09-17<br>要确保函数只做一件事，函数中的语句都要在同一抽象层级上。</p>
+<p> 2024-09-17<br>函数中混杂不同抽象层级，往往让人迷惑。读者可能无法判断某个表达式是基础概念还是细节。更恶劣的是，就像破损的窗户，一旦细节与基础概念混杂，更多的细节就会在函数中纠结起来。<br>自顶向下读代码：向下规则<br>我们想要让代码拥有自顶向下的阅读顺序。\[5\]我们想要让每个函数后面都跟着位于下一抽象层级的函数，这样一来，在查看函数列表时，就能偱抽象层级向下阅读了。我把这叫做向下规则。<br>换一种说法。我们想要这样读程序：程序就像是一系列 TO起头的段落，每一段都描述当前抽象层级，并引用位于下一抽象层级的后续TO起头段落。</p>
+<p> 2024-09-17<br>有足够特殊的理由才能用三个以上参数（多参数函数）——所以无论如何也不要这么做。</p>
+<p> 2024-09-17<br>向函数传入布尔值简直就是骇人听闻的做法。</p>
+<p> 2024-09-17<br>把指令与询问分隔开来，防止混淆的发生：</p>
+<p> 2024-09-17<br>重复可能是软件中一切邪恶的根源。许多原则与实践规则都是为控制与消除重复而创建。</p>
+<p> 2024-09-17<br>很多时候，简单到只需要创建一个描述与注释所言同一事物的函数即可。</p>
+<p> 2024-09-17<br>所谓每个函数都要有 Javadoc 或每个变量都要有注释的规矩全然是愚蠢可笑的。</p>
+<p> 2024-09-17<br>直接把代码注释掉是讨厌的做法。别这么干！</p>
+<p> 2024-09-18<br>实体变量应该在类的顶部声明。这应该不会增加变量的垂直距离，因为在设计良好的类中，它们如果不是被该类的所有方法也是被大多数方法所用。</p>
+<p> 2024-09-18<br>概念相关。概念相关的代码应该放到一起。相关性越强，彼此之间的距离就该越短。</p>
+<p> 2024-09-18<br>看看这些等式读起来多舒服。乘法因子之间没加空格，因为它们具有较高优先级。加减法运算项之间用空格隔开，因为加法和减法优先级较低。<br>不幸的是，多数代码格式化工具都会漠视运算符优先级，从头到尾采用同样的空格方式。在重新格式化代码后，以上这些微妙的空格用法就消失殆尽了。</p>
+<p> 2024-09-18<br>隐藏实现并非只是在变量之间放上一个函数层那么简单。隐藏实现关乎抽象！类并不简单地用取值器和赋值器将其变量推向外间，而是曝露抽象接口，以便用户无需了解数据的实现就能操作数据本体。</p>
+<p> 2024-09-18<br>过程式代码（使用数据结构的代码）便于在不改动既有数据结构的前提下添加新函数。面向对象代码便于在不改动既有函数的前提下添加新类。</p>
+<p> 2024-09-18<br>反过来讲也说得通：<br>过程式代码难以添加新数据结构，因为必须修改所有函数。面向对象代码难以添加新函数，因为必须修改所有类。<br>所以，对于面向对象较难的事，对于过程式代码却较容易，反之亦然！</p>
+<p> 2024-09-18<br>著名的得墨忒耳律（The Law of Demeter）\[2\]认为，模块不应了解它所操作对象的内部情形。如上节所见，对象隐藏数据，曝露操作。这意味着对象不应通过存取器曝露其内部结构，因为这样更像是曝露而非隐藏其内部结构。</p>
+<p> 2024-09-21<br>谁都知道TDD要求我们在编写生产代码前先编写单元测试。但这条规则只是冰山之巅。看看下列三定律\[2\]：<br>定律一 在编写不能通过的单元测试前，不可编写生产代码。<br>定律二 只可编写刚好无法通过的单元测试，不能编译也算不通过。<br>定律三 只可编写刚好足以通过当前失败测试的生产代码。</p>
+<p> 2024-09-21<br>测试代码和生产代码一样重要。它可不是二等公民。它需要被思考、被设计和被照料。它该像生产代码一般保持整洁。</p>
+<p> 2024-09-21<br>这些测试显然呈现了构造-操作-检验（BUILD-OPERATE-CHECK）\[3\]模式。每个测试都清晰地拆分为三个环节。第一个环节构造测试数据，第二个环节操作测试数据，第三个部分检验操作是否得到期望的结果。</p>
+<p> 2024-09-21<br>我认为，单个断言是个好准则\[8\]。</p>
+<p> 2024-09-21<br>单元测试应该恰好在使其通过的生产代码之前编写。如果在编写生产代码之后编写测试，你会发现生产代码难以测试。</p>
+<p> 2024-09-21<br>单一权责原则（SRP）\[2\]认为，类或模块应有且只有一条加以修改的理由。该原则既给出了权责的定义，又是关于类的长度的指导方针。类只应有一个权责——只有一条修改的理由</p>
+<p> 2024-09-21<br>当类丧失了内聚性，就拆分它！</p>
+<p> 2024-10-01<br>据Kent所述，只要遵循以下规则，设计就能变得“简单”：<br>运行所有测试；<br>不可重复；<br>表达了程序员的意图；<br>尽可能减少类和方法的数量；<br>以上规则按其重要程度排列。</p>
+<p> 2024-10-01<br>遵循SRP的类，测试起来较为简单。测试编写得越多，就越能持续走向编写较易测试的代码。</p>
+<p> 2024-10-01<br>在重构过程中，可以应用有关优秀软件设计的一切知识。提升内聚性，降低耦合度，切分关注面，模块化系统性关注面，缩小函数和类的尺寸，选用更好的名称，如此等等。这也是应用简单设计后三条规则的地方：消除重复，保证表达力，尽可能减少类和方法的数量。</p>
+<p> 2024-10-01<br>“对象是过程的抽象。线程是调度的抽象。”<br>——James O Coplien\[1\]</p>
+<p> 2024-10-01<br>并发常常需要对设计策略的根本性修改。</p>
+<p> 2024-10-07<br>当然，糟糕的代码可以清理。不过成本高昂。随着代码腐败下去，模块之间互相渗透，出现大量隐藏纠结的依赖关系。找到和破除陈旧的依赖关系又费时间又费劲。另一方面，保持代码整洁却相对容易。早晨在模块中制造出一堆混乱，下午就能轻易清理掉。更好的情况是，5分钟之前制造出混乱，马上就能很容易地清理掉。<br>所以，解决之道就是保持代码持续整洁和简单。永不让腐坏有机会开始。</p>
+<p>贴一个不错得总结文章，原自知乎。</p>
+<p>豆瓣评分8.6！将近400页的《代码整洁之道》，其实重点就5个点 - 关于编程哪些事的文章 - 知乎<br><a href="https://zhuanlan.zhihu.com/p/131375705">https://zhuanlan.zhihu.com/p/131375705</a></p>
+]]></content>
+      <categories>
+        <category>书籍</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>秋招第一面</title>
+    <url>/2024/09/23/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/</url>
+    <content><![CDATA[<h1 id="秋招第一个面试是诗悦给的"><a href="#秋招第一个面试是诗悦给的" class="headerlink" title="秋招第一个面试是诗悦给的"></a>秋招第一个面试是诗悦给的</h1><p>晚上散步的时候看见一封邮件，第一眼以为是感谢信，点进去一看是约面了，激动的我都快跳起来了，从九月初开始准备秋招，二十天了，一直没面试，只有做不完的海测和海笔，好不容易有个小天才到了简历复筛环节，结果还是挂了，真的挺郁郁的。</p>
+<p>累计投递了150+，就一家约面了，很大的缓解了焦虑，希望后续能有更多的面试吧。🐀秋招也想拿offer。</p>
+<p>每天就是投简历、测评、笔试，真的很焦虑，明明就一件事，还是做不好，每天看见牛客oc这家，哪家又发offer了，今天终于到我约面了，虽然才迈出第一步，我相信会越来越好的。</p>
+<p>附一张秋招统计记录图！</p>
+<p>- <img src="/img/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/%E6%8A%95%E9%80%92%E8%AE%B0%E5%BD%95.png" alt="投递记录"></p>
+]]></content>
+      <categories>
+        <category>日常</category>
       </categories>
   </entry>
   <entry>

@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>《代码整洁之道》分享 | 不想被遗忘的角落</title><meta name="author" content="buchen"><meta name="copyright" content="buchen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="最近花时间读了clean code，有些代码例子没看，十几页没高亮挺难受的，这是个遗憾。书里总结了若干的建议，都是鲍勃大叔几十年的最佳实践，并且解释了为啥要这样做。我并不分享这些最佳实践，想了解这块的可以直接看原著17章，算是做了一个总结。 这里分享一些勾画的句子。  2024-09-14代码质量与其整洁度成正比。  2024-09-14在Scrum和敏捷（Agile）的日子里，人们关注的是快速将">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《代码整洁之道》分享">
+<meta property="og:url" content="http://buchenzhang.github.io/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/index.html">
+<meta property="og:site_name" content="不想被遗忘的角落">
+<meta property="og:description" content="最近花时间读了clean code，有些代码例子没看，十几页没高亮挺难受的，这是个遗憾。书里总结了若干的建议，都是鲍勃大叔几十年的最佳实践，并且解释了为啥要这样做。我并不分享这些最佳实践，想了解这块的可以直接看原著17章，算是做了一个总结。 这里分享一些勾画的句子。  2024-09-14代码质量与其整洁度成正比。  2024-09-14在Scrum和敏捷（Agile）的日子里，人们关注的是快速将">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://buchenzhang.github.io/img/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/mmexport1728395341799.jpg">
+<meta property="article:published_time" content="2024-10-08T13:19:13.000Z">
+<meta property="article:modified_time" content="2024-10-08T13:51:21.999Z">
+<meta property="article:author" content="buchen">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://buchenzhang.github.io/img/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/mmexport1728395341799.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://buchenzhang.github.io/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":30,"languages":{"author":"作者: buchen","link":"链接: ","source":"来源: 不想被遗忘的角落","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '《代码整洁之道》分享',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: false,
+  postUpdate: '2024-10-08 21:51:21'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/-670edb7965410c21.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/mmexport1728395341799.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="不想被遗忘的角落"><span class="site-name">不想被遗忘的角落</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">《代码整洁之道》分享</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-10-08T13:19:13.000Z" title="发表于 2024-10-08 21:19:13">2024-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-10-08T13:51:21.999Z" title="更新于 2024-10-08 21:51:21">2024-10-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%B9%A6%E7%B1%8D/">书籍</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="《代码整洁之道》分享"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img gist" style="background-image: url(/img/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/mmexport1728395341799.jpg)"></div><article class="post-content" id="article-container"><p>最近花时间读了clean code，有些代码例子没看，十几页没高亮挺难受的，这是个遗憾。书里总结了若干的建议，都是鲍勃大叔几十年的最佳实践，并且解释了为啥要这样做。我并不分享这些最佳实践，想了解这块的可以直接看原著17章，算是做了一个总结。</p>
+<p>这里分享一些勾画的句子。</p>
+<p> 2024-09-14<br>代码质量与其整洁度成正比。</p>
+<p> 2024-09-14<br>在Scrum和敏捷（Agile）的日子里，人们关注的是快速将产品推向市场。我们要求工厂全速运转、生产软件。</p>
+<p> 2024-09-14<br>供职于贝尔软件生产研究实验室（Bell Labs Software Production Research）——没错，就是生产！——时，我们有些不太严密的发现，认为前后一致的缩进风格明显标志了较低的缺陷率。</p>
+<p> 2024-09-14<br>在Scrum中，我们使一切可见。我们晾出脏衣服。我们坦承代码状态，因为它永不完美。我们日渐成为完整的人，配得起神的眷顾，也越来越接近细节中的伟大之处。</p>
+<p> 2024-09-14<br>扯淡！我们永远抛不掉代码，因为代码呈现了需求的细节。在某些层面上，这些细节无法被忽略或抽象，必须明确之。将需求明确到机器可以执行的细节程度，就是编程要做的事。而这种规约正是代码。<br> 2024-09-14<br>我们都曾经瞟一眼自己亲手造成的混乱，决定弃之而不顾，走向新一天。我们都曾经看到自己的烂程序居然能运行，然后断言能运行的烂程序总比什么都没有强。我们都曾经说过有朝一日再回头清理。当然，在那些日子里，我们都没听过勒布朗（LeBlanc）法则：稍后等于永不（Later equals never）。</p>
+<p> 2024-09-14<br>Bjarne Stroustrup，C++语言发明者，C++Programming Language（中译版《C++程序设计语言》）一书作者。<br>我喜欢优雅和高效的代码。代码逻辑应当直截了当，叫缺陷难以隐藏；尽量减少依赖关系，使之便于维护；依据某种分层战略完善错误处理代码；性能调至最优，省得引诱别人做没规矩的优化，搞出一堆混乱来。整洁的代码只做好一件事。</p>
+<p> 2024-09-14<br>消除重复和提高表达力让我在整洁代码方面获益良多，只要铭记这两点，改进脏代码时就会大有不同。</p>
+<p> 2024-09-14<br>减少重复代码，提高表达力，提早构建简单抽象。这就是我写整洁代码的方法。</p>
+<p> 2024-09-17<br>取好名字最难的地方在于需要良好的描述技巧和共有文化背景。与其说这是一种技术、商业或管理问题，还不如说是一种教学问题。其结果是，这个领域内的许多人都没能学会做得很好。</p>
+<p> 2024-09-17<br>函数应该做一件事。做好这件事。只做这一件事。</p>
+<p> 2024-09-17<br>要确保函数只做一件事，函数中的语句都要在同一抽象层级上。</p>
+<p> 2024-09-17<br>函数中混杂不同抽象层级，往往让人迷惑。读者可能无法判断某个表达式是基础概念还是细节。更恶劣的是，就像破损的窗户，一旦细节与基础概念混杂，更多的细节就会在函数中纠结起来。<br>自顶向下读代码：向下规则<br>我们想要让代码拥有自顶向下的阅读顺序。\[5\]我们想要让每个函数后面都跟着位于下一抽象层级的函数，这样一来，在查看函数列表时，就能偱抽象层级向下阅读了。我把这叫做向下规则。<br>换一种说法。我们想要这样读程序：程序就像是一系列 TO起头的段落，每一段都描述当前抽象层级，并引用位于下一抽象层级的后续TO起头段落。</p>
+<p> 2024-09-17<br>有足够特殊的理由才能用三个以上参数（多参数函数）——所以无论如何也不要这么做。</p>
+<p> 2024-09-17<br>向函数传入布尔值简直就是骇人听闻的做法。</p>
+<p> 2024-09-17<br>把指令与询问分隔开来，防止混淆的发生：</p>
+<p> 2024-09-17<br>重复可能是软件中一切邪恶的根源。许多原则与实践规则都是为控制与消除重复而创建。</p>
+<p> 2024-09-17<br>很多时候，简单到只需要创建一个描述与注释所言同一事物的函数即可。</p>
+<p> 2024-09-17<br>所谓每个函数都要有 Javadoc 或每个变量都要有注释的规矩全然是愚蠢可笑的。</p>
+<p> 2024-09-17<br>直接把代码注释掉是讨厌的做法。别这么干！</p>
+<p> 2024-09-18<br>实体变量应该在类的顶部声明。这应该不会增加变量的垂直距离，因为在设计良好的类中，它们如果不是被该类的所有方法也是被大多数方法所用。</p>
+<p> 2024-09-18<br>概念相关。概念相关的代码应该放到一起。相关性越强，彼此之间的距离就该越短。</p>
+<p> 2024-09-18<br>看看这些等式读起来多舒服。乘法因子之间没加空格，因为它们具有较高优先级。加减法运算项之间用空格隔开，因为加法和减法优先级较低。<br>不幸的是，多数代码格式化工具都会漠视运算符优先级，从头到尾采用同样的空格方式。在重新格式化代码后，以上这些微妙的空格用法就消失殆尽了。</p>
+<p> 2024-09-18<br>隐藏实现并非只是在变量之间放上一个函数层那么简单。隐藏实现关乎抽象！类并不简单地用取值器和赋值器将其变量推向外间，而是曝露抽象接口，以便用户无需了解数据的实现就能操作数据本体。</p>
+<p> 2024-09-18<br>过程式代码（使用数据结构的代码）便于在不改动既有数据结构的前提下添加新函数。面向对象代码便于在不改动既有函数的前提下添加新类。</p>
+<p> 2024-09-18<br>反过来讲也说得通：<br>过程式代码难以添加新数据结构，因为必须修改所有函数。面向对象代码难以添加新函数，因为必须修改所有类。<br>所以，对于面向对象较难的事，对于过程式代码却较容易，反之亦然！</p>
+<p> 2024-09-18<br>著名的得墨忒耳律（The Law of Demeter）\[2\]认为，模块不应了解它所操作对象的内部情形。如上节所见，对象隐藏数据，曝露操作。这意味着对象不应通过存取器曝露其内部结构，因为这样更像是曝露而非隐藏其内部结构。</p>
+<p> 2024-09-21<br>谁都知道TDD要求我们在编写生产代码前先编写单元测试。但这条规则只是冰山之巅。看看下列三定律\[2\]：<br>定律一 在编写不能通过的单元测试前，不可编写生产代码。<br>定律二 只可编写刚好无法通过的单元测试，不能编译也算不通过。<br>定律三 只可编写刚好足以通过当前失败测试的生产代码。</p>
+<p> 2024-09-21<br>测试代码和生产代码一样重要。它可不是二等公民。它需要被思考、被设计和被照料。它该像生产代码一般保持整洁。</p>
+<p> 2024-09-21<br>这些测试显然呈现了构造-操作-检验（BUILD-OPERATE-CHECK）\[3\]模式。每个测试都清晰地拆分为三个环节。第一个环节构造测试数据，第二个环节操作测试数据，第三个部分检验操作是否得到期望的结果。</p>
+<p> 2024-09-21<br>我认为，单个断言是个好准则\[8\]。</p>
+<p> 2024-09-21<br>单元测试应该恰好在使其通过的生产代码之前编写。如果在编写生产代码之后编写测试，你会发现生产代码难以测试。</p>
+<p> 2024-09-21<br>单一权责原则（SRP）\[2\]认为，类或模块应有且只有一条加以修改的理由。该原则既给出了权责的定义，又是关于类的长度的指导方针。类只应有一个权责——只有一条修改的理由</p>
+<p> 2024-09-21<br>当类丧失了内聚性，就拆分它！</p>
+<p> 2024-10-01<br>据Kent所述，只要遵循以下规则，设计就能变得“简单”：<br>运行所有测试；<br>不可重复；<br>表达了程序员的意图；<br>尽可能减少类和方法的数量；<br>以上规则按其重要程度排列。</p>
+<p> 2024-10-01<br>遵循SRP的类，测试起来较为简单。测试编写得越多，就越能持续走向编写较易测试的代码。</p>
+<p> 2024-10-01<br>在重构过程中，可以应用有关优秀软件设计的一切知识。提升内聚性，降低耦合度，切分关注面，模块化系统性关注面，缩小函数和类的尺寸，选用更好的名称，如此等等。这也是应用简单设计后三条规则的地方：消除重复，保证表达力，尽可能减少类和方法的数量。</p>
+<p> 2024-10-01<br>“对象是过程的抽象。线程是调度的抽象。”<br>——James O Coplien\[1\]</p>
+<p> 2024-10-01<br>并发常常需要对设计策略的根本性修改。</p>
+<p> 2024-10-07<br>当然，糟糕的代码可以清理。不过成本高昂。随着代码腐败下去，模块之间互相渗透，出现大量隐藏纠结的依赖关系。找到和破除陈旧的依赖关系又费时间又费劲。另一方面，保持代码整洁却相对容易。早晨在模块中制造出一堆混乱，下午就能轻易清理掉。更好的情况是，5分钟之前制造出混乱，马上就能很容易地清理掉。<br>所以，解决之道就是保持代码持续整洁和简单。永不让腐坏有机会开始。</p>
+<p>贴一个不错得总结文章，原自知乎。</p>
+<p>豆瓣评分8.6！将近400页的《代码整洁之道》，其实重点就5个点 - 关于编程哪些事的文章 - 知乎<br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/131375705">https://zhuanlan.zhihu.com/p/131375705</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://buchenzhang.github.io">buchen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://buchenzhang.github.io/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/">http://buchenzhang.github.io/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://buchenzhang.github.io" target="_blank">不想被遗忘的角落</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/mmexport1728395341799.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AERESP/" title="Redis原理之通讯协议RESP"><img class="cover" src="/img/redis%E5%8E%9F%E7%90%86/QQ%E6%88%AA%E5%9B%BE20240926230531.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis原理之通讯协议RESP</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/-670edb7965410c21.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">buchen</div><div class="author-info__description">不会编程的小孩</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/buchenzhang" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:2718994735@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">建设中，部分功能存在问题，请见谅</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/" title="《代码整洁之道》分享"><img src="/img/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/mmexport1728395341799.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="《代码整洁之道》分享"/></a><div class="content"><a class="title" href="/2024/10/08/%E3%80%8A%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E3%80%8B%E5%88%86%E4%BA%AB/" title="《代码整洁之道》分享">《代码整洁之道》分享</a><time datetime="2024-10-08T13:19:13.000Z" title="发表于 2024-10-08 21:19:13">2024-10-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AERESP/" title="Redis原理之通讯协议RESP"><img src="/img/redis%E5%8E%9F%E7%90%86/QQ%E6%88%AA%E5%9B%BE20240926230531.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis原理之通讯协议RESP"/></a><div class="content"><a class="title" href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AERESP/" title="Redis原理之通讯协议RESP">Redis原理之通讯协议RESP</a><time datetime="2024-09-26T14:59:31.000Z" title="发表于 2024-09-26 22:59:31">2024-09-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/" title="Redis原理之网络模型"><img src="/img/redis%E5%8E%9F%E7%90%86/QQ%E6%88%AA%E5%9B%BE20240926230550.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis原理之网络模型"/></a><div class="content"><a class="title" href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/" title="Redis原理之网络模型">Redis原理之网络模型</a><time datetime="2024-09-26T14:59:18.000Z" title="发表于 2024-09-26 22:59:18">2024-09-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Redis原理之数据结构"><img src="/img/redis%E5%8E%9F%E7%90%86/QQ%E6%88%AA%E5%9B%BE20240926230449.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis原理之数据结构"/></a><div class="content"><a class="title" href="/2024/09/26/Redis%E5%8E%9F%E7%90%86%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Redis原理之数据结构">Redis原理之数据结构</a><time datetime="2024-09-26T14:49:39.000Z" title="发表于 2024-09-26 22:49:39">2024-09-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/23/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/" title="秋招第一面"><img src="/img/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/%E8%AF%97%E6%82%A6%E4%B8%80%E9%9D%A2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="秋招第一面"/></a><div class="content"><a class="title" href="/2024/09/23/%E7%A7%8B%E6%8B%9B%E7%AC%AC%E4%B8%80%E9%9D%A2/" title="秋招第一面">秋招第一面</a><time datetime="2024-09-23T14:42:11.000Z" title="发表于 2024-09-23 22:42:11">2024-09-23</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2024 By buchen</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'Ov23liIic1KoBhZH7RPT',
+      clientSecret: 'e5fd4f087682c3f67c79c3409b2a008b05f589ea',
+      repo: 'buchenzhang.github.io',
+      owner: 'buchenzhang',
+      admin: ['buchenzhang'],
+      id: '91b2390742e4fc58917e91ac49fd6143',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
